@@ -22,6 +22,17 @@ After install MACA SDK, run `bash build.sh` to build tests, the generated execut
 
 ### Quick examples
 
+Run a short single-node smoke test before longer performance runs:
+
+```shell
+export MACA_PATH=/opt/maca
+GPU_NUM=1 bash quick_smoke.sh
+```
+
+The script accepts `BENCH`, `TEST_DIR`, `MIN_BYTES`, `MAX_BYTES`, `ITERS`,
+`WARMUP_ITERS`, and `DATATYPE` environment variables so the same command can be
+used in small validation containers and larger multi-GPU performance jobs.
+
 Run with MPI on 4 processes (potentially on multiple nodes) with 1 GPUs each :
 ```shell
 export MACA_PATH=/opt/maca
