@@ -22,6 +22,13 @@ After install MACA SDK, run `bash build.sh` to build tests, the generated execut
 
 ### Quick examples
 
+Collect a small JSON environment report before performance runs:
+
+```shell
+export MACA_PATH=/opt/maca
+./tools/collect_env.sh > mccl-env.json
+```
+
 Run with MPI on 4 processes (potentially on multiple nodes) with 1 GPUs each :
 ```shell
 export MACA_PATH=/opt/maca
