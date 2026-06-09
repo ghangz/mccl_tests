@@ -22,6 +22,13 @@ After install MACA SDK, run `bash build.sh` to build tests, the generated execut
 
 ### Quick examples
 
+Run a single-machine MCCL test and keep stdout, stderr, metadata and exit code in one log directory:
+
+```shell
+export MACA_PATH=/opt/maca
+bash tools/run_mccl_with_logs.sh 4 all_reduce_perf
+```
+
 Run with MPI on 4 processes (potentially on multiple nodes) with 1 GPUs each :
 ```shell
 export MACA_PATH=/opt/maca
