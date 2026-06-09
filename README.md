@@ -22,6 +22,13 @@ After install MACA SDK, run `bash build.sh` to build tests, the generated execut
 
 ### Quick examples
 
+Preview the single-machine MCCL command without launching MPI:
+
+```shell
+export MACA_PATH=/opt/maca
+MCCL_DRY_RUN=1 bash mccl.sh 4 all_reduce_perf
+```
+
 Run with MPI on 4 processes (potentially on multiple nodes) with 1 GPUs each :
 ```shell
 export MACA_PATH=/opt/maca

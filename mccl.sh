@@ -19,7 +19,7 @@ if [ -n "$2" ]; then
   if [ "$2" = "all" ]; then
     BENCH_NAMES="all_reduce_perf all_gather_perf reduce_scatter_perf sendrecv_perf alltoall_perf"
   else
-    if [ -e "$TEST_DIR/$2" ]; then
+    if [[ "${MCCL_DRY_RUN:-0}" = "1" || -e "$TEST_DIR/$2" ]]; then
       BENCH_NAMES=$2
     else
       echo "$TEST_DIR/$2 dose not exist!"
@@ -33,5 +33,10 @@ MPI_RUN_OPT="--allow-run-as-root -mca pml ^ucx -mca osc ^ucx -mca btl ^openib"
 
 for BENCH in ${BENCH_NAMES}; do
 echo -n "The test is ${BENCH}, the maca version is " && realpath ${MACA_PATH}
-${MACA_PATH}/ompi/bin/mpirun -np ${MPI_PROCESS_NUM} ${MPI_RUN_OPT} ${TEST_DIR}/${BENCH} -b 1K -e 1G -d bfloat16 -f 2 -g 1 -n 10
+CMD="${MACA_PATH}/ompi/bin/mpirun -np ${MPI_PROCESS_NUM} ${MPI_RUN_OPT} ${TEST_DIR}/${BENCH} -b 1K -e 1G -d bfloat16 -f 2 -g 1 -n 10"
+echo "${CMD}"
+if [[ "${MCCL_DRY_RUN:-0}" = "1" ]]; then
+  continue
+fi
+${CMD}
 done
