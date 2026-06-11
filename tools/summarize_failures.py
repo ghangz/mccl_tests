@@ -14,10 +14,14 @@ FAILURE_RE = re.compile(r"(error|failed|failure|timeout|segmentation|abort|inval
 
 def summarize(path: Path) -> dict[str, object]:
     failures = []
-    for line_no, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), start=1):
-        if FAILURE_RE.search(line):
-            failures.append({"line": line_no, "text": line.strip()})
-    return {"path": str(path), "failure_count": len(failures), "failures": failures[:100]}
+    failure_count = 0
+    with path.open("r", encoding="utf-8", errors="replace") as handle:
+        for line_no, line in enumerate(handle, start=1):
+            if FAILURE_RE.search(line):
+                failure_count += 1
+                if len(failures) < 100:
+                    failures.append({"line": line_no, "text": line.strip()})
+    return {"path": str(path), "failure_count": failure_count, "failures": failures}
 
 
 def main() -> int:
