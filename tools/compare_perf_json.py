@@ -47,9 +47,19 @@ def _bandwidth(record: dict[str, Any]) -> float:
     raise ValueError(f"record has no bandwidth field: {record}")
 
 
+def _index_records(records: list[dict[str, Any]], path: Path) -> dict[tuple[tuple[str, str], ...], dict[str, Any]]:
+    indexed: dict[tuple[tuple[str, str], ...], dict[str, Any]] = {}
+    for record in records:
+        key = _record_key(record)
+        if key in indexed:
+            raise ValueError(f"{path} contains duplicate benchmark key: {dict(key)}")
+        indexed[key] = record
+    return indexed
+
+
 def compare(base_path: Path, candidate_path: Path, regression_threshold: float) -> dict[str, Any]:
-    base = {_record_key(record): record for record in _load_records(base_path)}
-    candidate = {_record_key(record): record for record in _load_records(candidate_path)}
+    base = _index_records(_load_records(base_path), base_path)
+    candidate = _index_records(_load_records(candidate_path), candidate_path)
     rows: list[dict[str, Any]] = []
     regressions: list[dict[str, Any]] = []
 

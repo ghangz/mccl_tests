@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from compare_perf_json import compare
+from tools.compare_perf_json import compare
 
 
 class ComparePerfJsonTest(unittest.TestCase):
@@ -26,6 +26,30 @@ class ComparePerfJsonTest(unittest.TestCase):
         self.assertEqual(report["matched"], 1)
         self.assertEqual(len(report["regressions"]), 1)
         self.assertEqual(report["regressions"][0]["change_percent"], -10.0)
+
+    def test_rejects_duplicate_keys(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            base = tmp / "base.json"
+            candidate = tmp / "candidate.json"
+            base.write_text(
+                json.dumps(
+                    {
+                        "results": [
+                            {"benchmark": "all_reduce", "size": "1M", "busbw": 100.0},
+                            {"benchmark": "all_reduce", "size": "1M", "busbw": 99.0},
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            candidate.write_text(
+                json.dumps({"results": [{"benchmark": "all_reduce", "size": "1M", "busbw": 90.0}]}),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "duplicate benchmark key"):
+                compare(base, candidate, regression_threshold=5.0)
 
 
 if __name__ == "__main__":
