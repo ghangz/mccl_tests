@@ -2,7 +2,7 @@
 # Copyright (c) 2026 MetaX Integrated Circuits (Shanghai) Co., Ltd. All rights reserved.
 
 export MACA_PATH="${MACA_PATH:-/opt/maca}"
-export LD_LIBRARY_PATH=${MACA_PATH}/lib:${MACA_PATH}/ompi/lib
+export LD_LIBRARY_PATH="${MACA_PATH}/lib:${MACA_PATH}/ompi/lib"
 
 export FORCE_ACTIVE_WAIT=2
 
@@ -38,7 +38,7 @@ MCCL_GPUS_PER_PROCESS="${MCCL_GPUS_PER_PROCESS:-1}"
 MCCL_ITERS="${MCCL_ITERS:-10}"
 
 for BENCH in ${BENCH_NAMES}; do
-echo -n "The test is ${BENCH}, the maca version is " && realpath ${MACA_PATH}
+echo -n "The test is ${BENCH}, the maca version is " && realpath "${MACA_PATH}"
 echo "MCCL params: min=${MCCL_MIN_BYTES} max=${MCCL_MAX_BYTES} dtype=${MCCL_DTYPE} step=${MCCL_STEP_FACTOR} gpus_per_process=${MCCL_GPUS_PER_PROCESS} iters=${MCCL_ITERS}"
-${MACA_PATH}/ompi/bin/mpirun -np ${MPI_PROCESS_NUM} ${MPI_RUN_OPT} ${TEST_DIR}/${BENCH} -b "${MCCL_MIN_BYTES}" -e "${MCCL_MAX_BYTES}" -d "${MCCL_DTYPE}" -f "${MCCL_STEP_FACTOR}" -g "${MCCL_GPUS_PER_PROCESS}" -n "${MCCL_ITERS}"
+"${MACA_PATH}/ompi/bin/mpirun" -np "${MPI_PROCESS_NUM}" ${MPI_RUN_OPT} "${TEST_DIR}/${BENCH}" -b "${MCCL_MIN_BYTES}" -e "${MCCL_MAX_BYTES}" -d "${MCCL_DTYPE}" -f "${MCCL_STEP_FACTOR}" -g "${MCCL_GPUS_PER_PROCESS}" -n "${MCCL_ITERS}"
 done
