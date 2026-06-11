@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 
@@ -17,6 +18,8 @@ UNITS = {
 
 def parse_size(text: str) -> int:
     text = text.strip().upper()
+    if not text:
+        raise ValueError("size string cannot be empty")
     if text[-1] in UNITS:
         return int(float(text[:-1]) * UNITS[text[-1]])
     return int(text)
@@ -27,6 +30,8 @@ def expand_sizes(min_bytes: int, max_bytes: int, step_factor: float | None = Non
         raise ValueError("invalid size range")
     if (step_factor is None) == (step_bytes is None):
         raise ValueError("exactly one of step_factor or step_bytes must be set")
+    if step_bytes is not None and step_bytes <= 0:
+        raise ValueError("step_bytes must be positive")
 
     sizes = []
     current = min_bytes
@@ -38,8 +43,6 @@ def expand_sizes(min_bytes: int, max_bytes: int, step_factor: float | None = Non
                 raise ValueError("step_factor must increase the size")
             current = next_size
         else:
-            if step_bytes <= 0:
-                raise ValueError("step_bytes must be positive")
             current += step_bytes
     return sizes
 
@@ -61,10 +64,13 @@ def main() -> int:
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
 
-    text = json.dumps(
-        summarize(args.min_bytes, args.max_bytes, args.step_factor, args.step_bytes),
-        indent=2,
-    )
+    try:
+        payload = summarize(args.min_bytes, args.max_bytes, args.step_factor, args.step_bytes)
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+
+    text = json.dumps(payload, indent=2)
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(text + "\n", encoding="utf-8")
