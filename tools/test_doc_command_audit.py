@@ -3,9 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-from doc_command_audit import audit
+from tools.doc_command_audit import audit
 
 
 class DocCommandAuditTest(unittest.TestCase):
@@ -15,7 +13,8 @@ class DocCommandAuditTest(unittest.TestCase):
             (root / "function").mkdir()
             (root / "mccl.sh").write_text("", encoding="utf-8")
             (root / "README.md").write_text(
-                "Run `bash mccl.sh` then `bash function/cluster.sh`.\n",
+                "Run `bash mccl.sh`, `bash mccl.sh`, `bash function/cluster.sh`, "
+                "and `bash mxmaca-sdk-install.sh`.\n",
                 encoding="utf-8",
             )
 
@@ -24,6 +23,14 @@ class DocCommandAuditTest(unittest.TestCase):
         self.assertEqual(result["reference_count"], 2)
         self.assertEqual(result["missing_count"], 1)
         self.assertFalse(result["references"][1]["exists"])
+        self.assertEqual(result["references"][0]["script"], "mccl.sh")
+        self.assertEqual(result["references"][1]["script"], "function/cluster.sh")
+
+    def test_rejects_missing_readme(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            with self.assertRaisesRegex(FileNotFoundError, "README not found"):
+                audit(root / "README.md", root)
 
 
 if __name__ == "__main__":
