@@ -6,10 +6,20 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from typing import TypedDict
 
 
-def parse_host_spec(spec: str) -> list[dict[str, int | str]]:
-    hosts: list[dict[str, int | str]] = []
+class HostEntry(TypedDict):
+    host: str
+    process_count: int
+    rank_start: int
+    rank_end: int
+    node_index: int
+
+
+def parse_host_spec(spec: str) -> list[HostEntry]:
+    hosts: list[HostEntry] = []
+    current_rank = 0
     for index, item in enumerate(part.strip() for part in spec.split(",") if part.strip()):
         host, sep, process_count = item.rpartition(":")
         if not sep or not host:
@@ -21,11 +31,12 @@ def parse_host_spec(spec: str) -> list[dict[str, int | str]]:
             {
                 "host": host,
                 "process_count": ranks,
-                "rank_start": sum(entry["process_count"] for entry in hosts),
-                "rank_end": sum(entry["process_count"] for entry in hosts) + ranks - 1,
+                "rank_start": current_rank,
+                "rank_end": current_rank + ranks - 1,
                 "node_index": index,
             }
         )
+        current_rank += ranks
     if not hosts:
         raise ValueError("host specification is empty")
     return hosts
@@ -35,7 +46,7 @@ def summarize(spec: str) -> dict[str, object]:
     hosts = parse_host_spec(spec)
     return {
         "node_count": len(hosts),
-        "total_processes": sum(int(entry["process_count"]) for entry in hosts),
+        "total_processes": sum(entry["process_count"] for entry in hosts),
         "hosts": hosts,
     }
 

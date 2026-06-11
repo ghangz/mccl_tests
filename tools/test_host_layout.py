@@ -1,10 +1,6 @@
-import sys
 import unittest
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-from host_layout import parse_host_spec, summarize
+from tools.host_layout import parse_host_spec, summarize
 
 
 class HostLayoutTest(unittest.TestCase):
