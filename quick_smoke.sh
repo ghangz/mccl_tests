@@ -11,7 +11,7 @@ ITERS="${ITERS:-2}"
 WARMUP_ITERS="${WARMUP_ITERS:-1}"
 DATATYPE="${DATATYPE:-bfloat16}"
 
-export LD_LIBRARY_PATH="${MACA_PATH}/lib:${MACA_PATH}/ompi/lib:${LD_LIBRARY_PATH:-}"
+export LD_LIBRARY_PATH="${MACA_PATH}/lib:${MACA_PATH}/ompi/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
 export FORCE_ACTIVE_WAIT="${FORCE_ACTIVE_WAIT:-2}"
 
 if [[ ! -x "${MACA_PATH}/ompi/bin/mpirun" ]]; then
