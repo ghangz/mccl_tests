@@ -11,10 +11,10 @@ from pathlib import Path
 def correction_factor(collective: str, ranks: int) -> float:
     if ranks <= 0:
         raise ValueError("ranks must be positive")
-    collective = collective.lower()
-    if collective == "all_reduce":
+    collective = collective.lower().replace("_", "").replace("-", "")
+    if collective == "allreduce":
         return 2 * (ranks - 1) / ranks
-    if collective in {"all_gather", "reduce_scatter"}:
+    if collective in {"allgather", "reducescatter"}:
         return (ranks - 1) / ranks
     if collective in {"broadcast", "reduce"}:
         return 1.0
@@ -22,6 +22,8 @@ def correction_factor(collective: str, ranks: int) -> float:
 
 
 def summarize(collective: str, ranks: int, algbw_gbps: float | None = None) -> dict[str, object]:
+    if algbw_gbps is not None and algbw_gbps < 0:
+        raise ValueError("algbw_gbps must be non-negative")
     factor = correction_factor(collective, ranks)
     payload: dict[str, object] = {"collective": collective, "ranks": ranks, "factor": factor}
     if algbw_gbps is not None:
