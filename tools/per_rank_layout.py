@@ -19,6 +19,10 @@ def build_layout(world_size: int, visible_device_per_rank: int = 1, max_gpus_per
         raise ValueError("visible_device_per_rank must be positive")
     if max_gpus_per_node <= 0:
         raise ValueError("max_gpus_per_node must be positive")
+    if visible_device_per_rank > max_gpus_per_node:
+        raise ValueError("visible_device_per_rank cannot exceed max_gpus_per_node")
+    if visible_device_per_rank != 1 and max_gpus_per_node != 8:
+        raise ValueError("multi-device layouts require max_gpus_per_node to be 8")
 
     ranks = []
     for rank in range(world_size):
