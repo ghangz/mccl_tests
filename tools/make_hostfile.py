@@ -10,7 +10,10 @@ from pathlib import Path
 def render_hostfile(hosts: list[str], slots: int) -> str:
     if slots <= 0:
         raise ValueError("slots must be positive")
-    return "\n".join(f"{host} slots={slots}" for host in hosts if host.strip()) + "\n"
+    valid_hosts = [host.strip() for host in hosts if host.strip()]
+    if not valid_hosts:
+        raise ValueError("At least one non-empty host must be provided")
+    return "\n".join(f"{host} slots={slots}" for host in valid_hosts) + "\n"
 
 
 def main() -> int:
