@@ -10,7 +10,7 @@ from pathlib import Path
 
 def load_rows(path: Path) -> list[dict[str, float | int]]:
     payload = json.loads(path.read_text(encoding="utf-8"))
-    rows = payload.get("rows", payload)
+    rows = payload.get("rows", payload) if isinstance(payload, dict) else payload
     if not isinstance(rows, list):
         raise ValueError("input must contain a list of rows")
     return rows
@@ -25,7 +25,7 @@ def evaluate(
 ) -> dict[str, object]:
     failures = []
     for row in rows:
-        size_bytes = int(row["size_bytes"])
+        size_bytes = int(row.get("size_bytes", 0))
         if min_size_bytes is not None and size_bytes < min_size_bytes:
             continue
         if min_algbw_gbps is not None and float(row.get("algbw_gbps", 0.0)) < min_algbw_gbps:
@@ -44,21 +44,19 @@ def main() -> int:
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
 
-    text = json.dumps(
-        evaluate(
-            load_rows(args.report),
-            min_algbw_gbps=args.min_algbw_gbps,
-            max_time_us=args.max_time_us,
-            min_size_bytes=args.min_size_bytes,
-        ),
-        indent=2,
+    report = evaluate(
+        load_rows(args.report),
+        min_algbw_gbps=args.min_algbw_gbps,
+        max_time_us=args.max_time_us,
+        min_size_bytes=args.min_size_bytes,
     )
+    text = json.dumps(report, indent=2)
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(text + "\n", encoding="utf-8")
     else:
         print(text)
-    return 0
+    return 0 if report["passed"] else 1
 
 
 if __name__ == "__main__":

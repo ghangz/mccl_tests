@@ -1,10 +1,9 @@
-import sys
+import json
+import tempfile
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-from check_perf_thresholds import evaluate
+from tools.check_perf_thresholds import evaluate, load_rows
 
 
 class CheckPerfThresholdsTest(unittest.TestCase):
@@ -39,6 +38,20 @@ class CheckPerfThresholdsTest(unittest.TestCase):
 
         self.assertFalse(result["passed"])
         self.assertEqual(result["failure_count"], 2)
+
+    def test_load_rows_accepts_plain_list_payload(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "report.json"
+            path.write_text(json.dumps([{"size_bytes": 1, "time_us": 2.0, "algbw_gbps": 3.0}]), encoding="utf-8")
+
+            rows = load_rows(path)
+
+        self.assertEqual(len(rows), 1)
+
+    def test_treats_missing_size_as_zero(self):
+        result = evaluate([{"time_us": 500.0, "algbw_gbps": 1.0}], min_size_bytes=1)
+
+        self.assertTrue(result["passed"])
 
 
 if __name__ == "__main__":
