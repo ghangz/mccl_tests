@@ -11,24 +11,23 @@ from pathlib import Path
 def parse_rows(text: str) -> list[dict[str, float | int]]:
     rows = []
     for line in text.splitlines():
-        line = line.lstrip("\ufeff")
+        line = line.lstrip("\ufeff").strip()
+        if line.startswith("#"):
+            line = line[1:].lstrip()
         parts = line.split()
         if len(parts) < 6 or not parts[0].isdigit() or not parts[1].isdigit():
             continue
-        numeric_tail: list[float] = []
-        for item in parts[2:]:
-            try:
-                numeric_tail.append(float(item))
-            except ValueError:
-                continue
-        if len(numeric_tail) < 3:
+        try:
+            time_us = float(parts[-4])
+            algbw_gbps = float(parts[-3])
+        except ValueError:
             continue
         rows.append(
             {
                 "size_bytes": int(parts[0]),
                 "count": int(parts[1]),
-                "time_us": numeric_tail[1],
-                "algbw_gbps": numeric_tail[2],
+                "time_us": time_us,
+                "algbw_gbps": algbw_gbps,
             }
         )
     return rows
